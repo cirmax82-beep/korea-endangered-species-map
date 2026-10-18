@@ -17,7 +17,9 @@
 import json
 import re
 import sys
+import threading
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from collections import Counter, defaultdict
@@ -31,6 +33,8 @@ import secure  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 API = "https://api.gbif.org/v1/occurrence/search"
+UA = {"User-Agent": "korea-endangered-map/1.0 (citizen science map; weekly snapshot)"}
+GATE = threading.BoundedSemaphore(6)   # GBIF에 동시에 보내는 요청 수(많으면 429로 거절당함)
 PAGE = 300
 CHUNK = 3000          # 한 번의 검색 크기(이보다 많으면 자료 묶음·연도·월로 나눠 받음)
 # 동물원·식물원 개체(살아 있는 표본)와 화석은 빼고 받음
@@ -79,15 +83,21 @@ def fetch(taxon_keys, offset=0, limit=PAGE, extra=()):
         ("country", "KR"), ("hasCoordinate", "true"), ("hasGeospatialIssue", "false"),
         ("occurrenceStatus", "PRESENT"), ("limit", limit), ("offset", offset),
     ] + [("basisOfRecord", b) for b in BASIS] + list(extra))
-    # GBIF는 가끔 응답 없이 멈추므로 오래 기다리지 않고 바로 다시 요청
-    for attempt in range(6):
+    # GBIF는 가끔 응답 없이 멈추므로 오래 기다리지 않고 다시 요청.
+    # 요청이 너무 많다(429)·서버 오류(5xx)면 알려 준 시간(Retry-After)이나 점점 길게 기다렸다 다시 보냄
+    for attempt in range(10):
         try:
-            with urllib.request.urlopen(f"{API}?{qs}", timeout=25) as r:
+            with GATE, urllib.request.urlopen(urllib.request.Request(f"{API}?{qs}", headers=UA), timeout=25) as r:
                 return json.load(r)
-        except Exception:
-            if attempt == 5:
+        except urllib.error.HTTPError as e:
+            if attempt == 9 or (e.code != 429 and e.code < 500):
                 raise
-            time.sleep(1 + attempt)
+            wait = e.headers.get("Retry-After")
+            time.sleep(min(120, float(wait) if wait and wait.isdigit() else 5 * 2 ** min(attempt, 4)))
+        except Exception:
+            if attempt == 9:
+                raise
+            time.sleep(min(30, 2 + 2 * attempt))
 
 
 def facet(d, field):
@@ -281,13 +291,21 @@ _orgs = {}
 
 def fetch_title(key):
     """자료 묶음 제목과 자료를 낸 기관 이름."""
+    def get(url):
+        for attempt in range(6):
+            try:
+                with GATE, urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=30) as r:
+                    return json.load(r)
+            except Exception:
+                if attempt == 5:
+                    raise
+                time.sleep(3 * (attempt + 1))
+
     try:
-        with urllib.request.urlopen(f"https://api.gbif.org/v1/dataset/{key}", timeout=60) as r:
-            ds = json.load(r)
+        ds = get(f"https://api.gbif.org/v1/dataset/{key}")
         org = ds.get("publishingOrganizationKey")
         if org and org not in _orgs:
-            with urllib.request.urlopen(f"https://api.gbif.org/v1/organization/{org}", timeout=60) as r:
-                _orgs[org] = json.load(r).get("title", "")
+            _orgs[org] = get(f"https://api.gbif.org/v1/organization/{org}").get("title", "")
         return ds.get("title", ""), _orgs.get(org, "")
     except Exception:
         return "", ""

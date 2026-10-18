@@ -40,6 +40,8 @@ jobs:
         run: python tools/inat_snapshot.py
       - name: GBIF 기관·타 플랫폼 기록 받기 (주 1회)
         if: github.event.schedule == '30 18 * * 0' || github.event_name == 'workflow_dispatch'
+        # GBIF가 실패해도(요청 과다 등) 기존 자료는 그대로 두고, 위에서 받은 시민 관찰은 올림
+        continue-on-error: true
         env:
           DATA_PASSWORD: ${{ secrets.DATA_PASSWORD }}
         run: python tools/gbif_snapshot.py
