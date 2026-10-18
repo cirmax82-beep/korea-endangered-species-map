@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+# 관리자 전용 암호화 자료는 검색에 나오지 않게
+Disallow: /data/precise-
+
+Sitemap: https://endangered.biogrideia.com/sitemap.xml
