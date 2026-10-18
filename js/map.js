@@ -1,10 +1,11 @@
-// 분포지도 (Leaflet + OpenStreetMap) — 멸종위기종이라 지점 대신 시·군·구(또는 시·도) 단위로만 칠함
+// 분포지도 (Leaflet + OpenStreetMap) — 시·군·구(또는 시·도) 단위로 칠하거나, 약 250m 격자 열지도로 보여 줌
 App.map = (() => {
   const { esc, fmt, seqColor, SEQ } = App.util;
   const S = App.state;
   const SRC = () => App.sources;
 
-  let map, sggLayer, sidoLayer, sidoLines;
+  let map, sggLayer, sidoLayer, sidoLines, heat;
+  let heatInfo = { cells: 0, records: 0 };
   let open = null;          // { kind: "sgg"|"sido", key }
   let scale = { max: 0, min: 0, metric: "species" };
 
@@ -27,7 +28,9 @@ App.map = (() => {
     L.control.scale({ imperial: false, position: "bottomright" }).addTo(map);
     map.attributionControl.addAttribution('기록: <a href="https://www.inaturalist.org" target="_blank" rel="noopener">iNaturalist</a>, <a href="https://www.gbif.org" target="_blank" rel="noopener">GBIF</a> · 경계: 통계청');
 
-    const hover = (layer, on) => layer.setStyle(on ? { weight: 2.4, color: "#173a24" } : { weight: 0.6, color: "#ffffff" });
+    // 열지도에서는 시·군·구 경계만 옅게(눌러서 지역 패널을 여는 용도)
+    const rest = () => (S.mapUnit === "heat" ? { weight: 0.5, color: "#7d8a7e" } : { weight: 0.6, color: "#ffffff" });
+    const hover = (layer, on) => layer.setStyle(on ? { weight: 2.4, color: "#173a24" } : rest());
     sggLayer = L.geoJSON(window.KR_SGG, {
       style: () => ({ weight: 0.6, color: "#fff", fillOpacity: 0.85, fillColor: "#eee" }),
       onEachFeature: (feat, layer) => {
@@ -50,6 +53,40 @@ App.map = (() => {
       },
     });
     sidoLines = L.geoJSON(window.KR_SIDO, { interactive: false, style: { className: "prov-line", weight: 1.3, opacity: 1, fill: false } });
+    heat = L.heatLayer([], {
+      radius: HEAT.radius, blur: 14, maxZoom: HEAT.maxZoom, minOpacity: 0.04, max: 1,
+      gradient: { 0.2: "#4dabf7", 0.4: "#51cf66", 0.6: "#fcc419", 0.8: "#ff922b", 1: "#e03131" },
+    });
+    map.on("zoomend", () => { if (map.hasLayer(heat)) heat.setOptions({ max: heatMax() }); });
+  };
+
+  // 진하기 기준: 지금 확대 수준에서 열지도 플러그인과 같은 방식으로 칸(반지름의 절반)마다 세기를 더해 보고,
+  // 상위 0.5% 칸이 가장 진하게 되도록 맞춤 — 전국을 볼 때 온통 빨갛게 포화되지 않게
+  const HEAT = { radius: 12, maxZoom: 12, top: 0.995 };
+  let heatPts = [];
+  const heatMax = () => {
+    const z = map.getZoom();
+    const size = HEAT.radius / 2;
+    const v = 1 / Math.pow(2, Math.max(0, Math.min(HEAT.maxZoom - z, 12)));
+    const cells = new Map();
+    for (const [lat, lng, w] of heatPts) {
+      const p = map.project([lat, lng], z);
+      const k = `${Math.floor(p.x / size)}|${Math.floor(p.y / size)}`;
+      cells.set(k, (cells.get(k) || 0) + w * v);
+    }
+    const sums = [...cells.values()].sort((a, b) => a - b);
+    return sums.length ? Math.max(1e-6, sums[Math.floor(sums.length * HEAT.top)]) : 1;
+  };
+
+  // 격자 하나의 세기는 건수의 로그(조사 지점 한 곳에 기록이 몰려도 지도를 다 덮지 않게)
+  const renderHeat = (on) => {
+    if (!on) { if (map.hasLayer(heat)) map.removeLayer(heat); return; }
+    const pts = App.data.heatPoints();
+    heatInfo = { cells: pts.length, records: pts.reduce((a, p) => a + p[2], 0) };
+    heatPts = pts.map(([lat, lng, n]) => [lat, lng, Math.log1p(n)]);
+    heat.setOptions({ max: heatMax() });
+    heat.setLatLngs(heatPts);
+    if (!map.hasLayer(heat)) map.addLayer(heat);
   };
 
   const sidoIdx = (code) => App.geo.regions.findIndex((r) => r.code === code);
@@ -74,7 +111,7 @@ App.map = (() => {
   // 한 종만 고르면 출현 종 수는 모두 1이라 기록 수로 칠함
   const metricNow = () => (S.filters.species && S.filters.species.size === 1 ? "records" : S.choroMetric);
 
-  const paint = (layer, stats, keyOf, nameOf) => {
+  const paint = (layer, stats, keyOf, nameOf, ghost = false) => {
     const metric = metricNow();
     const val = (a) => (!a ? 0 : metric === "species" ? a.species.size : a.records);
     const vals = [...stats.values()].map(val).filter((v) => v > 0);
@@ -88,7 +125,8 @@ App.map = (() => {
       const a = stats.get(key);
       const v = val(a);
       const t = !v ? 0 : span > 0 ? 0.1 + 0.9 * ((f(v) - f(min)) / span) : 1;
-      l.setStyle({ fillColor: seqColor(t) || "#f4f5f2", fillOpacity: v ? 0.85 : 0.55 });
+      l.setStyle(ghost ? { fillOpacity: 0, weight: 0.5, color: "#7d8a7e" }
+        : { fillColor: seqColor(t) || "#f4f5f2", fillOpacity: v ? 0.85 : 0.55, weight: 0.6, color: "#ffffff" });
       l.unbindTooltip();
       l.bindTooltip(tooltip(nameOf(l.feature.properties), a), { sticky: true, className: "region-tooltip" });
     });
@@ -100,24 +138,33 @@ App.map = (() => {
     let sea = 0;
     App.data.each((spId, gid, p, source, n) => { records += n; sp.add(spId); if (!gid) sea += n; });
     const areas = [...stats.values()].filter((a) => a && a.records > 0).length;
+    const one = S.filters.species && S.filters.species.size === 1 ? S.spById.get([...S.filters.species][0]) : null;
+    const head = `<div class="sum-main">${one ? `${esc(one.name)} · ` : ""}${fmt(records)}건 · ${sp.size}종</div>`;
+    if (S.mapUnit === "heat") {
+      document.getElementById("map-summary").innerHTML = `${head}
+        <div class="muted" style="margin-bottom:6px">열지도 격자 ${fmt(heatInfo.cells)}칸 · 기록 ${fmt(heatInfo.records)}건${records > heatInfo.records ? ` (위치를 흐렸거나 오차가 큰 ${fmt(records - heatInfo.records)}건 제외)` : ""}</div>
+        <div class="legend-scale" style="background:linear-gradient(90deg,#4dabf7,#51cf66,#fcc419,#ff922b,#e03131);height:10px;border-radius:3px"></div>
+        <div class="legend-scale-labels"><span>적음</span><span>기록 밀도(약 250m 격자)</span><span>많음</span></div>
+        <div class="muted" style="margin-top:6px;font-size:11px">시·군·구를 누르면 그 지역에 기록된 종을 볼 수 있습니다.</div>`;
+      return;
+    }
     const unitLabel = S.mapUnit === "sgg" ? "시·군·구" : "시·도";
     const label = scale.metric === "species" ? "출현 종 수" : "기록 수(로그 척도)";
-    const one = S.filters.species && S.filters.species.size === 1 ? S.spById.get([...S.filters.species][0]) : null;
-    document.getElementById("map-summary").innerHTML = `
-      <div class="sum-main">${one ? `${esc(one.name)} · ` : ""}${fmt(records)}건 · ${sp.size}종</div>
+    document.getElementById("map-summary").innerHTML = `${head}
       <div class="muted" style="margin-bottom:6px">기록이 있는 ${unitLabel} ${areas}곳${sea ? ` · 지도 밖(바다 등) ${fmt(sea)}건` : ""}</div>
       <div class="legend-scale">${SEQ.slice(1).map((col) => `<span style="background:${col}"></span>`).join("")}</div>
       <div class="legend-scale-labels"><span>${fmt(scale.min || 0)}</span><span>${label}</span><span>${fmt(scale.max)}</span></div>
-      <div class="muted" style="margin-top:6px;font-size:11px">🔒 보호를 위해 정확한 위치 대신 ${unitLabel} 단위로만 보여 줍니다.</div>`;
+      <div class="muted" style="margin-top:6px;font-size:11px">기록이 있는 지역을 ${unitLabel} 단위로 칠했습니다. 더 자세한 분포는 ‘열지도’에서 볼 수 있습니다.</div>`;
   };
 
   const render = () => {
     if (!map) return;
     const unit = S.mapUnit;
-    const stats = statsFor(unit);
-    if (unit === "sgg") {
+    const stats = statsFor(unit === "heat" ? "sgg" : unit);
+    renderHeat(unit === "heat");
+    if (unit === "sgg" || unit === "heat") {
       if (map.hasLayer(sidoLayer)) map.removeLayer(sidoLayer);
-      paint(sggLayer, stats, (p) => p.gid, (p) => `${p.short} ${p.name}`);
+      paint(sggLayer, stats, (p) => p.gid, (p) => `${p.short} ${p.name}`, unit === "heat");
       if (!map.hasLayer(sggLayer)) map.addLayer(sggLayer);
     } else {
       if (map.hasLayer(sggLayer)) map.removeLayer(sggLayer);

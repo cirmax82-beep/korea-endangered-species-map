@@ -74,6 +74,77 @@ App.exporter = (() => {
     return rows;
   };
 
+  // ---------- 관리자 전용: 정밀 좌표 원자료(기록 한 건이 한 줄) ----------
+  const PRECISE_COLUMNS = [
+    ["speciesId", "종 ID", "speciesID", "이 지도에서 쓰는 종 식별자"],
+    ["name", "국명", "vernacularName", "별표 1의 국명"],
+    ["sci", "학명", "scientificName", "별표 1의 학명"],
+    ["grade", "등급", "conservationStatusKR", "멸종위기 야생생물 Ⅰ급 / Ⅱ급"],
+    ["group", "분류군", "taxonGroup", ""],
+    ["category", "자료 종류", "recordCategory", "시민 관찰·검증됨 / 시민 관찰·확인 중 / 기관·타 플랫폼"],
+    ["platform", "플랫폼", "platform", "iNaturalist 또는 GBIF"],
+    ["publisher", "자료 기관", "publisher", "GBIF 자료를 낸 기관"],
+    ["dataset", "자료 묶음", "datasetName", "GBIF 자료 묶음 이름"],
+    ["eventDate", "관찰일", "eventDate", "YYYY-MM-DD (모르는 월·일은 생략)"],
+    ["yr", "연도", "year", ""],
+    ["lat", "위도", "decimalLatitude", "WGS84"],
+    ["lng", "경도", "decimalLongitude", "WGS84"],
+    ["unc", "위치 오차(m)", "coordinateUncertaintyInMeters", "원자료에 적힌 위치 오차(없으면 빈칸)"],
+    ["obsc", "위치 흐림", "coordinatesObscured", "iNaturalist가 위치를 흐렸으면 '예'(실제 위치와 수 km 다를 수 있음)"],
+    ["sido", "시도", "stateProvince", ""],
+    ["unit", "시군구", "county", ""],
+    ["basis", "기록 유형", "basisOfRecord", "관찰·표본 등"],
+    ["license", "라이선스", "license", "기록별 이용 조건(빈칸은 모든 권리 보유)"],
+    ["recordedBy", "관찰자", "recordedBy", "iNaturalist 사용자 이름"],
+    ["occurrenceId", "원본 ID", "occurrenceID", "iNaturalist 관찰 번호 또는 GBIF 기록 번호"],
+    ["url", "원본 주소", "references", "원래 기록 웹 주소"],
+  ];
+  const BASIS_KO = { HUMAN_OBSERVATION: "관찰", OBSERVATION: "관찰", PRESERVED_SPECIMEN: "표본", MACHINE_OBSERVATION: "기계 관측", MATERIAL_SAMPLE: "시료", OCCURRENCE: "기록" };
+
+  const collectPrecise = (opts) => {
+    const P = S.precise;
+    if (!P) return [];
+    const f = scopeFilters(opts);
+    const src = f.sources;
+    const rows = [];
+    const base = (sp, gid) => {
+      const u = gid ? App.geo.unit(gid) : null;
+      return { speciesId: sp.id, name: sp.name, sci: sp.sci, grade: App.data.grade(sp).label, group: App.data.group(sp).label,
+        sido: u ? App.geo.regions[u.sido].name : "", unit: u ? u.name : "" };
+    };
+    S.species.forEach((sp) => {
+      if (!App.data.speciesVisible(sp.id, f)) return;
+      // 기관·타 플랫폼(GBIF): [gbifKey, 위도, 경도, 오차, 관찰일, 기록 유형, 자료 묶음 번호, 라이선스, gid]
+      if (src.gbif && P.gbif && P.gbif.species[sp.id]) {
+        for (const [key, lat, lng, unc, date, basis, di, lic, gid] of P.gbif.species[sp.id]) {
+          const y = Math.floor(date / 10000) || 0;
+          if (!f.periods.has(App.data.periodOf(y))) continue;
+          const d = P.gbif.datasets[di] || [];
+          rows.push({ ...base(sp, gid), category: SOURCE_LABEL.gbif, platform: "GBIF", publisher: App.sources.orgLabel(d[2]) || "", dataset: d[1] || "",
+            eventDate: dateStr(date), yr: y || "", lat, lng, unc: unc >= 0 ? unc : "", obsc: "아니오", basis: BASIS_KO[basis] || basis,
+            license: lic, recordedBy: "", occurrenceId: String(key), url: `https://www.gbif.org/occurrence/${key}` });
+        }
+      }
+      // 시민 관찰(iNaturalist): 공개 스냅샷의 관찰에 정밀 좌표를 붙임. 실시간으로 받은 관찰은 받을 때의 좌표를 씀
+      if ((src.verified || src.pending) && S.inat[sp.id]) {
+        const ll = new Map(((P.inat && P.inat.species[sp.id]) || []).map((r) => [r[0], r]));
+        for (const o of S.inat[sp.id]) {
+          const source = o.q ? "verified" : "pending";
+          if (!src[source] || !f.periods.has(o.p)) continue;
+          const r = ll.get(o.id);
+          const [lat, lng, acc] = r ? [r[1], r[2], r[3]] : o.ll || [null, null, -1];
+          if (lat == null) continue;
+          rows.push({ ...base(sp, o.gid), category: SOURCE_LABEL[source], platform: "iNaturalist", publisher: "iNaturalist", dataset: "iNaturalist 관찰",
+            eventDate: dateStr(o.date), yr: o.y || "", lat, lng, unc: acc >= 0 ? acc : "", obsc: o.obsc ? "예" : "아니오", basis: "관찰",
+            license: INAT_LICENSE[o.olic] || "", recordedBy: o.u || "", occurrenceId: String(o.id), url: `https://www.inaturalist.org/observations/${o.id}` });
+        }
+      }
+    });
+    return rows;
+  };
+  const preciseTable = (rows, lang) => [PRECISE_COLUMNS.map(([, ko, en]) => (lang === "en" ? en : ko)),
+    ...rows.map((r) => PRECISE_COLUMNS.map(([k]) => r[k] ?? ""))];
+
   const speciesOrder = () => {
     const order = Object.keys(window.TAXON_GROUPS);
     return S.species.slice().sort((a, b) => order.indexOf(a.group) - order.indexOf(b.group) || a.grade.localeCompare(b.grade) || a.name.localeCompare(b.name, "ko"));
@@ -257,7 +328,7 @@ App.exporter = (() => {
       ? `지도 필터 적용 — 분류군 ${f.groups.size}개, 등급 ${f.grades ? [...f.grades].map((g) => window.STATUS[g].label).join("·") : "전체"}, 종 ${f.species ? f.species.size + "개 선택" : "전체"}, 기간 ${[...f.periods].map((p) => App.data.PERIODS[p].label).join("·")}`
       : "전체 자료(필터 없음)";
     return [
-      ["멸종위기종 종합관리 · 시민 분포지도 — 연구용 자료"],
+      [opts.precise ? "멸종위기종 종합관리 · 시민 분포지도 — 연구용 자료 (관리자 전용 · 정밀 좌표 포함 · 외부 공유 주의)" : "멸종위기종 종합관리 · 시민 분포지도 — 연구용 자료"],
       [],
       ["만든 시각", new Date().toLocaleString("ko-KR")],
       ["지도 주소", SITE],
@@ -279,7 +350,9 @@ App.exporter = (() => {
       ["이 지도", `멸종위기종 종합관리 시민 분포지도, ${SITE} (내려받은 날짜 함께 적기)`],
       [],
       ["유의할 점"],
-      ["", "멸종위기종 보호를 위해 좌표는 제공하지 않고 시·군·구 × 기간 단위 건수만 제공합니다. 정밀 위치가 필요한 연구는 원자료 기관에 직접 요청하세요."],
+      opts.precise
+        ? ["", "‘정밀 원자료’ 시트에는 기록마다의 좌표가 들어 있습니다. 밀렵·채취에 악용되지 않도록 외부에 공유하지 마세요. 기록이 아주 많은 종은 연도 없는 기관 기록 일부가 빠져 있을 수 있습니다."]
+        : ["", "멸종위기종 보호를 위해 좌표는 제공하지 않고 시·군·구 × 기간 단위 건수만 제공합니다. 정밀 위치가 필요한 연구는 원자료 기관에 직접 요청하세요."],
       ["", "기록은 조사·관찰이 많은 곳에 몰립니다. 기록이 없다고 그 지역에 없다는 뜻은 아닙니다(출현 자료, 부재 자료 아님)."],
       ["", "‘시민 관찰·확인 중’은 종이 틀렸을 수 있습니다. 분석에는 ‘검증됨’과 ‘기관·타 플랫폼’만 쓰는 것을 권합니다."],
       ["", "iNaturalist가 위치를 흐린 관찰은 실제 위치에서 수 km 떨어진 좌표로 공개되므로 이웃 시·군·구로 잡혔을 수 있습니다."],
@@ -336,21 +409,35 @@ App.exporter = (() => {
     const wb = XLSX.utils.book_new();
     wb.Props = { Title: "멸종위기종 연구용 자료", Author: "멸종위기종 종합관리 시민 분포지도", CreatedDate: new Date() };
     XLSX.utils.book_append_sheet(wb, toSheet(XLSX, sheetReadme(rows, opts), { autofilter: false }), "안내");
+    if (opts.precise) XLSX.utils.book_append_sheet(wb, toSheet(XLSX, preciseTable(collectPrecise(opts), opts.lang)), "정밀 원자료");
     for (const key of opts.sheets) {
       const aoa = key === "raw" ? rawTable(rows, opts.lang) : BUILDERS[key](rows, opts);
       XLSX.utils.book_append_sheet(wb, toSheet(XLSX, aoa), SHEETS[key].name);
     }
     const out = XLSX.write(wb, { bookType: "xlsx", type: "array", compression: true, bookSST: true });
-    return { filename: `멸종위기종_연구자료_${stamp()}.xlsx`, blob: new Blob([out], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }) };
+    return { filename: `멸종위기종_연구자료${opts.precise ? "_정밀좌표" : ""}_${stamp()}.xlsx`, blob: new Blob([out], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }) };
   };
 
-  const buildCsv = (rows, opts) => ({
+  const buildCsv = (rows, opts) => (opts.precise ? {
+    filename: `멸종위기종_정밀좌표_${stamp()}.csv`,
+    blob: new Blob([toCSV(preciseTable(collectPrecise(opts), opts.lang))], { type: "text/csv;charset=utf-8" }),
+  } : {
     filename: `멸종위기종_시군구별_기록_${stamp()}.csv`,
     blob: new Blob([toCSV(rawTable(rows, opts.lang))], { type: "text/csv;charset=utf-8" }),
   });
 
   // 시·군·구 경계에 집계를 붙인 GeoJSON
   const buildGeoJSON = (rows, opts) => {
+    if (opts.precise) {
+      const feats = collectPrecise(opts).map((r) => ({
+        type: "Feature", geometry: { type: "Point", coordinates: [r.lng, r.lat] },
+        properties: Object.fromEntries(PRECISE_COLUMNS.filter(([k]) => k !== "lat" && k !== "lng").map(([k, ko, en]) => [opts.lang === "en" ? en : ko, r[k] ?? ""])),
+      }));
+      return {
+        filename: `멸종위기종_정밀좌표_${stamp()}.geojson`,
+        blob: new Blob([JSON.stringify({ type: "FeatureCollection", features: feats })], { type: "application/geo+json" }),
+      };
+    }
     const m = unitAgg(rows);
     const en = opts.lang === "en";
     const feats = App.geo.sggFeatures.map((f) => {
@@ -386,7 +473,21 @@ App.exporter = (() => {
         <span><b>${esc(s.name)}</b><small>${esc(s.desc)}</small></span></label>`).join("");
     const html = `
       <form class="export-form" id="export-form" novalidate>
-        <p class="muted small" style="margin-top:0">🔒 멸종위기종 보호를 위해 좌표는 내려받을 수 없고, 시·군·구 × 기간 단위 집계만 제공합니다.</p>
+        <fieldset id="export-admin">
+          <legend>🔐 관리자 전용 — 정밀 좌표</legend>
+          <div id="admin-locked" ${S.precise ? "hidden" : ""}>
+            <p class="muted small" style="margin:0 0 8px">비밀번호가 없으면 좌표 없이 시·군·구 × 기간 집계만 받을 수 있습니다.</p>
+            <div class="admin-row">
+              <input type="password" class="input" id="admin-pw" autocomplete="current-password" placeholder="관리자 비밀번호" aria-label="관리자 비밀번호">
+              <button type="button" class="btn btn-light" id="admin-unlock">잠금 풀기</button>
+            </div>
+            <p class="muted small" id="admin-msg" style="margin:6px 0 0"></p>
+          </div>
+          <div id="admin-unlocked" ${S.precise ? "" : "hidden"}>
+            <label class="check"><input type="checkbox" name="precise" checked> 정밀 좌표 포함(기록 한 건이 한 줄) <span class="muted" id="precise-count"></span></label>
+            <p class="muted small" style="margin:4px 0 0">외부에 공유하지 마세요. <button type="button" class="link" id="admin-lock">다시 잠그기</button></p>
+          </div>
+        </fieldset>
         <fieldset>
           <legend>범위</legend>
           <label class="check"><input type="radio" name="scope" value="all" ${presetScope === "all" ? "checked" : ""}> 모든 자료</label>
@@ -425,7 +526,8 @@ App.exporter = (() => {
         const fd = new FormData(form);
         const sources = { verified: false, pending: false, gbif: false };
         fd.getAll("src").forEach((k) => { sources[k] = true; });
-        return { scope: fd.get("scope"), format: fd.get("format"), lang: fd.get("lang"), sources, sheets: fd.getAll("sheet") };
+        return { scope: fd.get("scope"), format: fd.get("format"), lang: fd.get("lang"), sources, sheets: fd.getAll("sheet"),
+          precise: !!S.precise && fd.get("precise") === "on" };
       };
       const update = () => {
         const o = readOpts();
@@ -433,11 +535,40 @@ App.exporter = (() => {
         body.querySelector("#export-sheets").hidden = o.format !== "xlsx";
         const rows = collect(o);
         const n = rows.reduce((a, r) => a + r.n, 0);
-        body.querySelector("#export-count").textContent = `기록 ${fmt(n)}건 · 집계 ${fmt(rows.length)}줄`;
-        body.querySelector("#export-go").disabled = !n;
+        const np = o.precise ? collectPrecise(o).length : 0;
+        body.querySelector("#export-count").textContent = o.precise
+          ? `정밀 좌표 ${fmt(np)}건 · 집계 기록 ${fmt(n)}건` : `기록 ${fmt(n)}건 · 집계 ${fmt(rows.length)}줄`;
+        if (S.precise) body.querySelector("#precise-count").textContent = `${fmt(np)}건`;
+        body.querySelector("#export-go").disabled = !(o.precise ? np : n);
       };
       form.addEventListener("change", update);
       update();
+
+      const setLocked = () => {
+        body.querySelector("#admin-locked").hidden = !!S.precise;
+        body.querySelector("#admin-unlocked").hidden = !S.precise;
+        update();
+      };
+      const tryUnlock = async () => {
+        const pw = body.querySelector("#admin-pw");
+        const msg = body.querySelector("#admin-msg");
+        const btn = body.querySelector("#admin-unlock");
+        if (!pw.value) { msg.textContent = "비밀번호를 넣어 주세요."; return; }
+        btn.disabled = true;
+        msg.textContent = "푸는 중… (몇 초 걸립니다)";
+        try {
+          const ok = await App.secure.unlock(pw.value);
+          msg.textContent = ok ? "" : "비밀번호가 맞지 않습니다.";
+          if (ok) { pw.value = ""; setLocked(); }
+        } catch (err) {
+          msg.textContent = err.message || "풀지 못했습니다.";
+        } finally {
+          btn.disabled = false;
+        }
+      };
+      body.querySelector("#admin-unlock").onclick = tryUnlock;
+      body.querySelector("#admin-pw").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); tryUnlock(); } });
+      body.querySelector("#admin-lock").onclick = () => { App.secure.lock(); setLocked(); };
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
         const btn = body.querySelector("#export-go");
@@ -448,7 +579,7 @@ App.exporter = (() => {
         try {
           const file = await makeFile(o);
           download(file.filename, file.blob);
-          toast(`기록 ${fmt(file.count)}건을 파일로 저장했습니다.`);
+          toast(o.precise ? "정밀 좌표 파일을 저장했습니다. 외부에 공유하지 마세요." : `기록 ${fmt(file.count)}건을 파일로 저장했습니다.`);
         } catch (err) {
           console.warn(err);
           toast(err.message || "파일을 만들지 못했습니다.", 5000);

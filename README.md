@@ -1,6 +1,6 @@
 # 멸종위기종 종합관리 · 시민 분포지도
 
-국내 **멸종위기 야생생물 282종**이 어디에 사는지, 시민 관찰(집단지성)과 기관 기록을 합쳐 **시·군·구 단위**로 보여 주는 공개 지도입니다. [교란생물 종합관리](https://invasive.biogrideia.com/)와 같은 방식으로 만들었습니다.
+국내 **멸종위기 야생생물 282종**이 어디에 사는지, 시민 관찰(집단지성)과 기관 기록을 합쳐 **시·군·구 단위**와 **약 250m 격자 열지도**로 보여 주는 공개 지도입니다. [교란생물 종합관리](https://invasive.biogrideia.com/)와 같은 방식으로 만들었습니다.
 
 - **공개 지도**: https://endangered.biogrideia.com/
 - **참여 안내 바로가기**(홍보용): https://endangered.biogrideia.com/#join
@@ -13,11 +13,23 @@
 
 ## 위치 공개 원칙
 
-모든 대상 종이 법정 보호종이라, 밀렵·불법 채취와 서식지 교란을 막기 위해 **좌표를 저장하지 않습니다.**
+모든 대상 종이 법정 보호종이라, 밀렵·불법 채취와 서식지 교란을 막기 위해 **기록마다의 좌표는 공개하지 않습니다.**
 
-- 기본 자료(스냅샷)를 만들 때 기록마다 시·군·구 코드만 남깁니다. 공개 저장소의 자료 파일에도 좌표가 없습니다(`tools/inat_snapshot.py`, `tools/gbif_snapshot.py`).
-- 앱이 실시간으로 받는 iNaturalist 관찰도 좌표로 시·군·구만 판별하고 좌표는 버립니다(`js/sources.js`).
-- 연구용 내려받기도 시·군·구 × 기간 집계만 제공합니다.
+- 공개 자료 파일에는 기록마다 시·군·구 코드와 약 250m 격자 번호만 남깁니다(`data/gbif-snapshot.json`, `data/heat-gbif.json`, `data/inat-snapshot.json`).
+- iNaturalist가 위치를 흐린 관찰과 위치 오차가 1km를 넘는 기록은 격자 번호를 비워 열지도에 넣지 않습니다.
+- 공개 내려받기는 시·군·구 × 기간 집계만 제공합니다.
+
+### 관리자 전용 정밀 좌표
+
+- 정밀 좌표는 비밀번호로 암호화한 파일(`data/precise-gbif.enc.json`, `data/precise-inat.enc.json`)에만 있습니다. PBKDF2-SHA256(60만 회) → AES-256-GCM 방식이며, 비밀번호는 코드나 저장소 어디에도 없습니다.
+- 내려받기 창에서 관리자 비밀번호를 넣으면 브라우저 안에서 풀려 좌표가 든 엑셀·CSV·GeoJSON을 받을 수 있습니다.
+- 자동 갱신은 저장소 비밀값 `DATA_PASSWORD`로 암호화합니다. 비밀번호를 바꾸려면 비밀값을 바꾼 뒤 Actions에서 수동 실행하세요.
+
+```bash
+gh secret set DATA_PASSWORD -R cirmax82-beep/korea-endangered-species-map
+```
+
+- 암호화 파일 자체는 공개라 누구나 비밀번호를 대입해 볼 수 있습니다. 단어 여러 개를 이은 16자 이상의 긴 비밀번호를 쓰세요.
 - 시민 관찰 원본 링크는 iNaturalist가 위치를 흐린 관찰에만 겁니다.
 
 ## 대상 종
@@ -50,7 +62,7 @@ python -m http.server 5175
 `실행.bat`을 더블클릭해도 됩니다. GitHub Actions(`.github/workflows/pages.yml`)가 매일 03:00(한국 시간)에 iNaturalist 자료를, 매주 월요일에 GBIF 자료를 새로 받아 배포합니다. 스냅샷 스크립트는 `shapely`가 필요합니다.
 
 ```bash
-pip install shapely
+pip install shapely cryptography
 ```
 
 ```bash

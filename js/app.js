@@ -140,12 +140,22 @@
   const syncSourceBoxes = () => ["verified", "pending", "gbif"].forEach((k) => { $(`#src-${k}`).checked = S.filters.sources[k]; });
 
   const bindSidebar = () => {
-    $("#mode-switch").addEventListener("click", (e) => {
+    $("#mode-switch").addEventListener("click", async (e) => {
       const b = e.target.closest("button[data-mode]");
       if (!b) return;
       S.mapUnit = b.dataset.mode;
       $$("#mode-switch button").forEach((x) => x.classList.toggle("active", x === b));
+      $("#metric-switch").hidden = S.mapUnit === "heat";
       App.map.closePanel();
+      if (S.mapUnit === "heat" && !S.heat) {
+        showBanner("열지도 자료 받는 중…", 0.5);
+        try { S.heat = await App.sources.loadHeat("data/heat-gbif.json"); } catch (err) {
+          console.warn("열지도 자료를 읽지 못했습니다", err);
+          toast("기관 기록 열지도 자료를 받지 못해 시민 관찰만 보여 줍니다.", 4000);
+          S.heat = {};
+        }
+        $("#load-banner").hidden = true;
+      }
       App.map.render();
     });
     $("#metric-switch").addEventListener("click", (e) => {

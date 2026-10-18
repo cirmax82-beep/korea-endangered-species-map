@@ -32,12 +32,16 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
-      - name: 시·군·구 판별 도구 설치
-        run: pip install shapely
+      - name: 시·군·구 판별·암호화 도구 설치
+        run: pip install shapely cryptography
       - name: iNaturalist 시민 관찰 받기
+        env:
+          DATA_PASSWORD: ${{ secrets.DATA_PASSWORD }}
         run: python tools/inat_snapshot.py
       - name: GBIF 기관·타 플랫폼 기록 받기 (주 1회)
         if: github.event.schedule == '30 18 * * 0' || github.event_name == 'workflow_dispatch'
+        env:
+          DATA_PASSWORD: ${{ secrets.DATA_PASSWORD }}
         run: python tools/gbif_snapshot.py
       - name: 바뀐 자료 올리기
         run: |

@@ -9,6 +9,8 @@ App.state = {
   inatSnapshotAt: null,
   inatSyncedAt: null,    // 마지막 실시간 갱신 시각(Date)
   gbif: {},              // speciesId → { taxonKey, total, units: {gid: [기간별 건수]}, sea: [..], years, ds }
+  heat: null,            // speciesId → [격자, 기간, 건수, …] (열지도를 처음 열 때 받음)
+  precise: null,         // 관리자 잠금을 풀었을 때만: { gbif, inat } 정밀 기록
   gbifDatasets: [],
   gbifAt: null,
   filters: {
@@ -18,7 +20,7 @@ App.state = {
     periods: new Set([0, 1, 2, 3, 4]),
     sources: { verified: true, pending: true, gbif: true },
   },
-  mapUnit: "sgg",        // sgg(시·군·구) | sido(시·도)
+  mapUnit: "sgg",        // sgg(시·군·구) | sido(시·도) | heat(열지도)
   choroMetric: "species",
 };
 
@@ -167,6 +169,29 @@ App.data = (() => {
     return out;
   };
 
+  // 열지도 점: [위도, 경도, 건수] — 격자(약 250m) 중심. 위치를 흐린 관찰·오차 큰 기록은 격자가 없어 빠짐
+  const heatPoints = (opts = {}) => {
+    const f = opts.filters || S.filters;
+    const src = f.sources;
+    const per = f.periods || ALL_PERIODS();
+    const m = new Map();
+    const put = (c, n) => m.set(c, (m.get(c) || 0) + n);
+    if (src.verified || src.pending) {
+      for (const id in S.inat) {
+        if (!speciesVisible(id, f)) continue;
+        for (const o of S.inat[id]) if (o.cell >= 0 && src[o.q ? "verified" : "pending"] && per.has(o.p)) put(o.cell, 1);
+      }
+    }
+    if (src.gbif && S.heat) {
+      for (const id in S.heat) {
+        if (!speciesVisible(id, f)) continue;
+        const a = S.heat[id];
+        for (let i = 0; i < a.length; i += 3) if (per.has(a[i + 1])) put(a[i], a[i + 2]);
+      }
+    }
+    return [...m.entries()].map(([c, n]) => [...App.geo.cellCenter(c), n]);
+  };
+
   // 시민 관찰 전체 목록(최근순) — 참여하기 화면, 종 상세, 시·군·구 패널에 사용
   const recentInat = ({ spId = null, gid = null, withPhoto = false, limit = 24, filter = null } = {}) => {
     const all = [];
@@ -204,6 +229,6 @@ App.data = (() => {
 
   return {
     SOURCES, PERIODS, ALL_PERIODS, periodOf, rebuildSpecies, group, colorOf, grade, gradeBadge, speciesVisible,
-    each, byUnit, bySido, bySpecies, byYear, recentInat, applyInatChanges,
+    each, byUnit, bySido, bySpecies, byYear, heatPoints, recentInat, applyInatChanges,
   };
 })();

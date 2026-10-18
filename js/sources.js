@@ -2,7 +2,7 @@
 App.sources = (() => {
   const INAT_API = "https://api.inaturalist.org/v2/observations";
   const PLACE_KOREA = 6891;
-  const FIELDS = "id,quality_grade,observed_on,location,obscured," +
+  const FIELDS = "id,quality_grade,observed_on,location,obscured,positional_accuracy," +
     "user.login,photos.url,photos.license_code,license_code,taxon.id,taxon.ancestor_ids";
   const LICENSES = {
     cc0: "CC0", "cc-by": "CC BY", "cc-by-nc": "CC BY-NC", "cc-by-sa": "CC BY-SA", "cc-by-nd": "CC BY-ND",
@@ -68,11 +68,11 @@ App.sources = (() => {
   const orgLabel = (name) => ORGS[name] || name || "";
 
   // ---------- iNaturalist ----------
-  // 행: [id, gid, 관찰일(YYYYMMDD), 검증됨, 위치흐림, 관찰자, 사진, 사진 라이선스, 사진 수, 관찰 라이선스]
+  // 행: [id, gid, 관찰일(YYYYMMDD), 검증됨, 위치흐림, 관찰자, 사진, 사진 라이선스, 사진 수, 관찰 라이선스, 열지도 격자(-1 = 없음)]
   const toObs = (row) => {
-    const [id, gid, date, q, obsc, u, ph, lic, np, olic] = row;
+    const [id, gid, date, q, obsc, u, ph, lic, np, olic, cell] = row;
     const y = Math.floor(date / 10000) || 0;
-    return { id, gid: gid || null, date, y, p: App.data.periodOf(y), q, obsc, u, ph, lic, np, olic: olic || "" };
+    return { id, gid: gid || null, date, y, p: App.data.periodOf(y), q, obsc, u, ph, lic, np, olic: olic || "", cell: cell == null ? -1 : cell };
   };
 
   const loadInatSnapshot = async (url) => {
@@ -84,13 +84,19 @@ App.sources = (() => {
     return { obs, taxa: snap.taxa || {}, at: snap.generatedAt };
   };
 
-  // API 결과 → 관찰 객체. 좌표는 시·군·구 판별에만 쓰고 버림
+  // API 결과 → 관찰 객체. 좌표는 시·군·구·격자 판별에 쓰고, 관리자 내려받기용으로 메모리에만 둠(저장하지 않음)
+  const MAX_UNCERTAINTY = 1000;
   const fromApi = (o) => {
     const [lat, lng] = String(o.location).split(",").map(Number);
     const [ph, lic] = shortPhoto(o.photos);
-    return toObs([o.id, App.geo.gidOf(lat, lng), Number(String(o.observed_on || "0").replace(/-/g, "")) || 0,
+    const gid = App.geo.gidOf(lat, lng);
+    const acc = o.positional_accuracy;
+    const fine = gid && !o.obscured && (acc == null || acc <= MAX_UNCERTAINTY);
+    const obs = toObs([o.id, gid, Number(String(o.observed_on || "0").replace(/-/g, "")) || 0,
       o.quality_grade === "research" ? 1 : 0, o.obscured ? 1 : 0, (o.user || {}).login || "", ph, lic,
-      (o.photos || []).length, o.license_code || ""]);
+      (o.photos || []).length, o.license_code || "", fine ? App.geo.cellOf(lat, lng) : -1]);
+    obs.ll = [lat, lng, acc == null ? -1 : acc];
+    return obs;
   };
 
   // 목록 종의 iNaturalist 분류 ID → 앱의 종 ID
@@ -172,8 +178,15 @@ App.sources = (() => {
     return { entries: snap.species || {}, datasets: snap.datasets || [], at: snap.generatedAt };
   };
 
+  // 열지도용 기관 기록 격자(약 250m) — 열지도를 처음 열 때만 받음
+  const loadHeat = async (url) => {
+    const res = await fetch(url, { cache: "no-cache" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return (await res.json()).species || {};
+  };
+
   return {
     PLACE_KOREA, photoUrl, licenseLabel, obsUrl, taxonUrl, identifyUrl, gbifSpeciesUrl, gbifDatasetUrl, orgLabel,
-    loadInatSnapshot, inatChangesSince, inatFullLoad, loadGbifSnapshot,
+    loadInatSnapshot, inatChangesSince, inatFullLoad, loadGbifSnapshot, loadHeat,
   };
 })();

@@ -73,5 +73,13 @@ App.geo = (() => {
     return best >= 0 ? units[best].gid : null;
   };
 
-  return { regions, units, unit, sidoOf, gidOf, sggFeatures, sidoFeatures };
+  // 열지도 격자(약 250m) — tools/sgg.py 와 같은 규칙. 격자 번호 = 행 × w + 열
+  const GRID = { lat0: 32.8, lng0: 124.0, dlat: 0.00225, dlng: 0.0028, w: 3000 };
+  const cellOf = (lat, lng) => {
+    const i = Math.floor((lat - GRID.lat0) / GRID.dlat), j = Math.floor((lng - GRID.lng0) / GRID.dlng);
+    return i >= 0 && j >= 0 && j < GRID.w ? i * GRID.w + j : -1;
+  };
+  const cellCenter = (c) => [GRID.lat0 + (Math.floor(c / GRID.w) + 0.5) * GRID.dlat, GRID.lng0 + ((c % GRID.w) + 0.5) * GRID.dlng];
+
+  return { regions, units, unit, sidoOf, gidOf, sggFeatures, sidoFeatures, GRID, cellOf, cellCenter };
 })();

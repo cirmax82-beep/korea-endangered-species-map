@@ -508,3 +508,6 @@ table.matrix tbody th .dot { margin-right: 6px; width: 8px; height: 8px; }
 span.obs-card { cursor: default; }
 .region-panel .bar-row { grid-template-columns: 148px 1fr 40px; }
 .modal .bar-row { grid-template-columns: 150px 1fr 56px; }
+.leaflet-heatmap-layer { pointer-events: none; }
+.admin-row { display: flex; gap: 8px; }
+.admin-row .input { flex: 1; min-width: 0; }

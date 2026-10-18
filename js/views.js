@@ -159,7 +159,7 @@ App.views = (() => {
             <dt>분류</dt><dd>${esc(App.data.group(s).label)} · ${esc(s.family || "-")}</dd>
             <dt>보전 등급</dt><dd>${esc(App.data.grade(s).label)} (야생생물법 시행규칙 별표 1)</dd>
             <dt>IUCN</dt><dd>${iucnBadge(s) || "-"}</dd>
-            <dt>위치 공개</dt><dd>보호를 위해 시·군·구 단위로만 보여 줍니다.</dd>
+            <dt>위치 공개</dt><dd>보호를 위해 시·군·구 단위와 약 250m 격자 열지도로만 보여 줍니다.</dd>
             ${s.note ? `<dt>참고</dt><dd>${esc(s.note)}</dd>` : ""}
             ${wikiText(id) ? `<dt>설명</dt><dd>${esc(wikiText(id))} <span class="muted small">— 위키백과(CC BY-SA)</span></dd>` : ""}
             <dt>기록</dt><dd>시민 관찰 검증됨 ${fmt(x.verified)} · 확인 중 ${fmt(x.pending)} · 기관 ${fmt(x.gbif)}${x.sea ? ` · 지도 밖(바다 등) ${fmt(x.sea)}` : ""}</dd>

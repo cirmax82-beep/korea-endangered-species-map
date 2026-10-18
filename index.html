@@ -47,12 +47,13 @@
           <div class="segmented" id="mode-switch">
             <button data-mode="sgg" class="active">시·군·구별</button>
             <button data-mode="sido">시·도별</button>
+            <button data-mode="heat">열지도</button>
           </div>
           <div class="segmented small" id="metric-switch">
             <button data-metric="species" class="active">출현 종 수</button>
             <button data-metric="records">기록 수</button>
           </div>
-          <p class="muted small" style="margin:6px 0 0">🔒 밀렵·채취를 막기 위해 정확한 위치 대신 지역 단위로만 보여 줍니다.</p>
+          <p class="muted small" style="margin:6px 0 0">열지도는 기록을 약 250m 격자로 모아 보여 줍니다. 기록마다의 정확한 좌표는 공개하지 않습니다.</p>
         </div>
 
         <div class="field-group">
@@ -227,7 +228,8 @@
           <div class="panel">
             <h2 class="section-title">위치는 어떻게 보호하나요?</h2>
             <ul class="plain">
-              <li>이 지도는 정확한 좌표를 저장하지도, 보여 주지도 않습니다. 관찰마다 <b>시·군·구</b>만 남깁니다.</li>
+              <li>공개 지도는 <b>시·군·구</b> 색칠과 <b>약 250m 격자</b> 열지도까지만 보여 줍니다. 관찰 하나하나의 정확한 좌표는 공개하지 않습니다.</li>
+              <li>iNaturalist가 위치를 흐린 관찰은 열지도에 넣지 않습니다.</li>
               <li>iNaturalist는 많은 멸종위기종의 위치를 자동으로 흐리게 처리합니다. 직접 ‘위치 흐리게’를 고르면 더 안전합니다.</li>
               <li>관찰 원본 링크는 iNaturalist가 위치를 흐린 관찰에만 겁니다.</li>
               <li>참여자 의견의 3분의 2 이상이 같은 종으로 모이면 <b>검증됨</b>(iNaturalist ‘연구 등급’)이 됩니다.</li>
@@ -284,7 +286,8 @@
             <li><b>엑셀(.xlsx)</b>: 시군구×종×기간 집계(긴 형식), 종별·시군구별 요약, 시군구×종 출현 여부(0/1), 시도×종, 기간×종, 연도×종, 분류군별 요약, 시민 관찰 목록, 자료 출처를 시트별로 담습니다.</li>
             <li><b>CSV</b>: 시군구×종×기간×자료 종류별 기록 수 한 표. R·Python에 바로 읽을 수 있습니다.</li>
             <li><b>GeoJSON</b>: 시·군·구 경계에 출현 종 수·기록 수를 붙인 자료(QGIS 등).</li>
-            <li>멸종위기종 보호를 위해 좌표는 내려받을 수 없습니다. 정밀 위치가 필요한 연구는 원자료 기관에 직접 요청하세요.</li>
+            <li>멸종위기종 보호를 위해 기록별 좌표는 공개 내려받기에 넣지 않습니다. 정밀 위치가 필요한 연구는 원자료 기관에 직접 요청하세요.</li>
+            <li>운영자는 관리자 비밀번호로 정밀 좌표가 들어간 파일을 받을 수 있습니다. 이 자료는 비밀번호로 암호화되어 있어 비밀번호 없이는 열 수 없습니다.</li>
           </ul>
         </div>
         <div class="panel">
@@ -298,8 +301,9 @@
         <div class="panel">
           <h3>위치 공개 원칙</h3>
           <ul class="plain">
-            <li>밀렵·불법 채취와 서식지 교란을 막기 위해 기록의 좌표를 저장하지 않고, 시·군·구(229곳) 단위로만 집계해 보여 줍니다.</li>
-            <li>기본 자료(공개 저장소의 자료 파일), 실시간 반영 자료, 내려받기 파일에 모두 같은 원칙을 적용합니다.</li>
+            <li>밀렵·불법 채취와 서식지 교란을 막기 위해 기록마다의 좌표는 공개하지 않습니다. 지도는 시·군·구(229곳) 단위 색칠과 약 250m 격자 열지도로 보여 줍니다.</li>
+            <li>공개 저장소의 자료 파일에는 기록마다 시·군·구 코드와 약 250m 격자 번호만 있습니다. 정밀 좌표는 비밀번호로 암호화한 파일에만 있고, 운영자만 풀 수 있습니다.</li>
+            <li>iNaturalist가 위치를 흐린 관찰과 위치 오차가 1km를 넘는 기록은 열지도에 넣지 않고 시·군·구 집계에만 넣습니다.</li>
             <li>시민 관찰 원본 링크는 iNaturalist가 위치를 흐린 관찰에만 겁니다.</li>
           </ul>
         </div>
@@ -339,6 +343,7 @@
   <div class="toast" id="toast" hidden></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
   <script src="js/data-species.js"></script>
   <script src="js/data-sgg.js"></script>
   <script src="js/util.js"></script>
@@ -347,6 +352,7 @@
   <script src="js/sources.js"></script>
   <script src="js/map.js"></script>
   <script src="js/views.js"></script>
+  <script src="js/secure.js"></script>
   <script src="js/export.js"></script>
   <script src="js/app.js"></script>
 </body>
