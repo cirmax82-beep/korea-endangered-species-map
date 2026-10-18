@@ -1,0 +1,71 @@
+# 기본 자료(스냅샷)를 자동으로 새로 받고 GitHub Pages에 배포합니다.
+# - 매일 03:00(한국 시간): iNaturalist 시민 관찰
+# - 매주 월요일 03:30(한국 시간): GBIF 기관·타 플랫폼 기록도 함께
+# - main에 직접 올리면(push) 자료 갱신 없이 바로 배포
+# - Actions 탭에서 수동 실행(workflow_dispatch)하면 둘 다 갱신 후 배포
+name: 자료 갱신과 배포
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 18 * * *"
+    - cron: "30 18 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  update:
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: 시·군·구 판별 도구 설치
+        run: pip install shapely
+      - name: iNaturalist 시민 관찰 받기
+        run: python tools/inat_snapshot.py
+      - name: GBIF 기관·타 플랫폼 기록 받기 (주 1회)
+        if: github.event.schedule == '30 18 * * 0' || github.event_name == 'workflow_dispatch'
+        run: python tools/gbif_snapshot.py
+      - name: 바뀐 자료 올리기
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/*.json
+          if git diff --cached --quiet; then
+            echo "바뀐 자료 없음"
+            exit 0
+          fi
+          git commit -m "자료 자동 갱신 $(date -u +%Y-%m-%d)"
+          git push
+
+  deploy:
+    needs: update
+    # 자료 갱신이 실패해도(예: 외부 API 장애) 기존 자료로 배포는 계속
+    if: always() && needs.update.result != 'cancelled'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v5

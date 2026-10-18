@@ -1,0 +1,6 @@
+# 로컬 개발 설정
+.claude/
+__pycache__/
+*.pyc
+.venv/
+dist/

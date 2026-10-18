@@ -1,0 +1,284 @@
+# 야생생물 보호 및 관리에 관한 법률 시행규칙 [별표 1] 멸종위기 야생생물 <개정 2022. 12. 9.> (2026. 5. 12. 시행본에서도 같음)
+# 분류군	등급	번호	국명	학명
+mammal	en1	1	늑대	Canis lupus coreanus
+mammal	en1	2	대륙사슴	Cervus nippon hortulorum
+mammal	en1	3	무산쇠족제비	Mustela nivalis
+mammal	en1	4	물범	Phoca largha
+mammal	en1	5	반달가슴곰	Ursus thibetanus ussuricus
+mammal	en1	6	붉은박쥐	Myotis rufoniger
+mammal	en1	7	사향노루	Moschus moschiferus
+mammal	en1	8	산양	Naemorhedus caudatus
+mammal	en1	9	수달	Lutra lutra
+mammal	en1	10	스라소니	Lynx lynx
+mammal	en1	11	여우	Vulpes vulpes peculiosa
+mammal	en1	12	작은관코박쥐	Murina ussuriensis
+mammal	en1	13	표범	Panthera pardus orientalis
+mammal	en1	14	호랑이	Panthera tigris altaica
+mammal	en2	1	담비	Martes flavigula
+mammal	en2	2	물개	Callorhinus ursinus
+mammal	en2	3	삵	Prionailurus bengalensis
+mammal	en2	4	큰바다사자	Eumetopias jubatus
+mammal	en2	5	토끼박쥐	Plecotus ognevi
+mammal	en2	6	하늘다람쥐	Pteromys volans aluco
+bird	en1	1	검독수리	Aquila chrysaetos
+bird	en1	2	고니	Cygnus columbianus
+bird	en1	3	넓적부리도요	Eurynorhynchus pygmeus
+bird	en1	4	노랑부리백로	Egretta eulophotes
+bird	en1	5	느시	Otis tarda
+bird	en1	6	두루미	Grus japonensis
+bird	en1	7	먹황새	Ciconia nigra
+bird	en1	8	뿔제비갈매기	Thalasseus bernsteini
+bird	en1	9	저어새	Platalea minor
+bird	en1	10	참수리	Haliaeetus pelagicus
+bird	en1	11	청다리도요사촌	Tringa guttifer
+bird	en1	12	크낙새	Dryocopus javensis
+bird	en1	13	호사비오리	Mergus squamatus
+bird	en1	14	혹고니	Cygnus olor
+bird	en1	15	황새	Ciconia boyciana
+bird	en1	16	흰꼬리수리	Haliaeetus albicilla
+bird	en2	1	개리	Anser cygnoides
+bird	en2	2	검은머리갈매기	Larus saundersi
+bird	en2	3	검은머리물떼새	Haematopus ostralegus
+bird	en2	4	검은머리촉새	Emberiza aureola
+bird	en2	5	검은목두루미	Grus grus
+bird	en2	6	고대갈매기	Larus relictus
+bird	en2	7	긴꼬리딱새	Terpsiphone atrocaudata
+bird	en2	8	긴점박이올빼미	Strix uralensis
+bird	en2	9	까막딱다구리	Dryocopus martius
+bird	en2	10	노랑부리저어새	Platalea leucorodia
+bird	en2	11	독수리	Aegypius monachus
+bird	en2	12	따오기	Nipponia nippon
+bird	en2	13	뜸부기	Gallicrex cinerea
+bird	en2	14	매	Falco peregrinus
+bird	en2	15	무당새	Emberiza sulphurata
+bird	en2	16	물수리	Pandion haliaetus
+bird	en2	17	벌매	Pernis ptilorhynchus
+bird	en2	18	붉은가슴흰죽지	Aythya baeri
+bird	en2	19	붉은배새매	Accipiter soloensis
+bird	en2	20	붉은어깨도요	Calidris tenuirostris
+bird	en2	21	붉은해오라기	Gorsachius goisagi
+bird	en2	22	뿔쇠오리	Synthliboramphus wumizusume
+bird	en2	23	뿔종다리	Galerida cristata
+bird	en2	24	새매	Accipiter nisus
+bird	en2	25	새호리기	Falco subbuteo
+bird	en2	26	섬개개비	Locustella pleskei
+bird	en2	27	솔개	Milvus migrans
+bird	en2	28	쇠검은머리쑥새	Emberiza yessoensis
+bird	en2	29	쇠제비갈매기	Sterna albifrons
+bird	en2	30	수리부엉이	Bubo bubo
+bird	en2	31	시베리아흰두루미	Grus leucogeranus
+bird	en2	32	알락개구리매	Circus melanoleucos
+bird	en2	33	알락꼬리마도요	Numenius madagascariensis
+bird	en2	34	양비둘기	Columba rupestris
+bird	en2	35	올빼미	Strix aluco
+bird	en2	36	재두루미	Grus vipio
+bird	en2	37	잿빛개구리매	Circus cyaneus
+bird	en2	38	조롱이	Accipiter gularis
+bird	en2	39	참매	Accipiter gentilis
+bird	en2	40	청호반새	Halcyon pileata
+bird	en2	41	큰고니	Cygnus cygnus
+bird	en2	42	큰기러기	Anser fabalis
+bird	en2	43	큰덤불해오라기	Ixobrychus eurhythmus
+bird	en2	44	큰뒷부리도요	Limosa lapponica
+bird	en2	45	큰말똥가리	Buteo hemilasius
+bird	en2	46	팔색조	Pitta nympha
+bird	en2	47	항라머리검독수리	Aquila clanga
+bird	en2	48	흑기러기	Branta bernicla
+bird	en2	49	흑두루미	Grus monacha
+bird	en2	50	흑비둘기	Columba janthina
+bird	en2	51	흰목물떼새	Charadrius placidus
+bird	en2	52	흰이마기러기	Anser erythropus
+bird	en2	53	흰죽지수리	Aquila heliaca
+herp	en1	1	비바리뱀	Sibynophis chinensis
+herp	en1	2	수원청개구리	Dryophytes suweonensis
+herp	en2	1	고리도롱뇽	Hynobius yangi
+herp	en2	2	구렁이	Elaphe schrenckii
+herp	en2	3	금개구리	Pelophylax chosenicus
+herp	en2	4	남생이	Mauremys reevesii
+herp	en2	5	맹꽁이	Kaloula borealis
+herp	en2	6	표범장지뱀	Eremias argus
+fish	en1	1	감돌고기	Pseudopungtungia nigra
+fish	en1	2	꼬치동자개	Pseudobagrus brevicorpus
+fish	en1	3	남방동사리	Odontobutis obscura
+fish	en1	4	모래주사	Microphysogobio koreensis
+fish	en1	5	미호종개	Cobitis choii
+fish	en1	6	얼룩새코미꾸리	Koreocobitis naktongensis
+fish	en1	7	여울마자	Microphysogobio rapidus
+fish	en1	8	임실납자루	Acheilognathus somjinensis
+fish	en1	9	좀수수치	Kichulchoia brevifasciata
+fish	en1	10	퉁사리	Liobagrus obesus
+fish	en1	11	흰수마자	Gobiobotia nakdongensis
+fish	en2	1	가는돌고기	Pseudopungtungia tenuicorpa
+fish	en2	2	가시고기	Pungitius sinensis
+fish	en2	3	꺽저기	Coreoperca kawamebari
+fish	en2	4	꾸구리	Gobiobotia macrocephala
+fish	en2	5	다묵장어	Lethenteron reissneri
+fish	en2	6	돌상어	Gobiobotia brevibarba
+fish	en2	7	둑중개	Cottus koreanus
+fish	en2	8	묵납자루	Acheilognathus signifer
+fish	en2	9	버들가지	Rhynchocypris semotilus
+fish	en2	10	부안종개	Iksookimia pumila
+fish	en2	11	새미	Ladislavia taczanowskii
+fish	en2	12	어름치	Hemibarbus mylodon
+fish	en2	13	연준모치	Phoxinus phoxinus
+fish	en2	14	열목어	Brachymystax lenok tsinlingensis
+fish	en2	15	칠성장어	Lethenteron japonicus
+fish	en2	16	큰줄납자루	Acheilognathus majusculus
+fish	en2	17	한강납줄개	Rhodeus pseudosericeus
+fish	en2	18	한둑중개	Cottus hangiongensis
+insect	en1	1	닻무늬길앞잡이	Cicindela (Abroscelis) anchoralis
+insect	en1	2	붉은점모시나비	Parnassius bremeri
+insect	en1	3	비단벌레	Chrysochroa (Chrysochroa) coreana
+insect	en1	4	산굴뚝나비	Hipparchia autonoe
+insect	en1	5	상제나비	Aporia crataegi
+insect	en1	6	수염풍뎅이	Polyphylla laticollis manchurica
+insect	en1	7	장수하늘소	Callipogon (Eoxenus) relictus
+insect	en1	8	큰홍띠점박이푸른부전나비	Sinia divina
+insect	en2	1	깊은산부전나비	Protantigius superans
+insect	en2	2	노란잔산잠자리	Macromia daimoji
+insect	en2	3	대모잠자리	Libellula angelina
+insect	en2	4	두점박이사슴벌레	Prosopocoilus astacoides blanchardi
+insect	en2	5	뚱보주름메뚜기	Haplotropis brunneriana
+insect	en2	6	멋조롱박딱정벌레	Acoptolabrus mirabilissimus mirabilissimus
+insect	en2	7	물방개	Cybister (Cybister) chinensis
+insect	en2	8	물장군	Lethocerus deyrolli
+insect	en2	9	불나방	Arctia caja
+insect	en2	10	소똥구리	Gymnopleurus (Gymnopleurus) mopsus
+insect	en2	11	쌍꼬리부전나비	Cigaritis takanonis
+insect	en2	12	애기뿔소똥구리	Copris (Copris) tripartitus
+insect	en2	13	여름어리표범나비	Mellicta ambigua
+insect	en2	14	왕은점표범나비	Argynnis nerippe
+insect	en2	15	윤조롱박딱정벌레	Acoptolabrus leechi yooni
+insect	en2	16	은줄팔랑나비	Leptalina unicolor
+insect	en2	17	참호박뒤영벌	Bombus (Megabombus) koreanus
+insect	en2	18	창언조롱박딱정벌레	Acoptolabrus changeonleei
+insect	en2	19	큰자색호랑꽃무지	Osmoderma caeleste
+insect	en2	20	한국꼬마잠자리	Nannophya koreana
+insect	en2	21	홍줄나비	Chalinga pratti
+invert	en1	1	귀이빨대칭이	Cristaria plicata
+invert	en1	2	나팔고둥	Charonia lampas
+invert	en1	3	남방방게	Pseudohelice subquadrata
+invert	en1	4	두드럭조개	Aculamprotula coreana
+invert	en2	1	갯게	Chasmagnathus convexus
+invert	en2	2	거제외줄달팽이	Satsuma myomphala
+invert	en2	3	검붉은수지맨드라미	Dendronephthya suensoni
+invert	en2	4	금빛나팔돌산호	Tubastraea coccinea
+invert	en2	5	기수갈고둥	Clithon retropictum
+invert	en2	6	깃산호	Plumarella spinosa
+invert	en2	7	대추귀고둥	Ellobium chinense
+invert	en2	8	둔한진총산호	Euplexaura crassa
+invert	en2	9	망상맵시산호	Echinogorgia reticulata
+invert	en2	10	물거미	Argyroneta aquatica
+invert	en2	11	밤수지맨드라미	Dendronephthya castanea
+invert	en2	12	별혹산호	Ellisella ceratophyta
+invert	en2	13	붉은발말똥게	Sesarmops intermedius
+invert	en2	14	선침거미불가사리	Ophiacantha linea
+invert	en2	15	연수지맨드라미	Dendronephthya mollis
+invert	en2	16	염주알다슬기	Koreanomelania nodifila
+invert	en2	17	울릉도달팽이	Karaftohelix adamsi
+invert	en2	18	유착나무돌산호	Dendrophyllia cribrosa
+invert	en2	19	의염통성게	Nacospatangus alta
+invert	en2	20	자색수지맨드라미	Dendronephthya putteri
+invert	en2	21	잔가지나무돌산호	Dendrophyllia ijimai
+invert	en2	22	착생깃산호	Plumarella adhaerens
+invert	en2	23	참달팽이	Koreanohadra koreana
+invert	en2	24	측맵시산호	Echinogorgia complexa
+invert	en2	25	칼세오리옆새우	Gammarus zeongogensis
+invert	en2	26	해송	Myriopathes japonica
+invert	en2	27	흰발농게	Austruca lactea
+invert	en2	28	흰수지맨드라미	Dendronephthya alba
+plant	en1	1	광릉요강꽃	Cypripedium japonicum
+plant	en1	2	금자란	Gastrochilus fuscopunctatus
+plant	en1	3	나도풍란	Sedirea japonica
+plant	en1	4	만년콩	Euchresta japonica
+plant	en1	5	비자란	Thrixspermum japonicum
+plant	en1	6	암매	Diapensia lapponica var. obovata
+plant	en1	7	제주고사리삼	Mankyua chejuense
+plant	en1	8	죽백란	Cymbidium lancifolium
+plant	en1	9	탐라란	Gastrochilus japonicus
+plant	en1	10	털복주머니란	Cypripedium guttatum
+plant	en1	11	풍란	Neofinetia falcata
+plant	en1	12	한라솜다리	Leontopodium coreanum var. hallaisanense
+plant	en1	13	한란	Cymbidium kanran
+plant	en2	1	가는동자꽃	Lychnis kiusiana
+plant	en2	2	가시연	Euryale ferox
+plant	en2	3	가시오갈피나무	Eleutherococcus senticosus
+plant	en2	4	각시수련	Nymphaea tetragona var. minima
+plant	en2	5	개가시나무	Quercus gilva
+plant	en2	6	갯봄맞이꽃	Glaux maritima var. obtusifolia
+plant	en2	7	검은별고사리	Cyclosorus interruptus
+plant	en2	8	구름병아리난초	Neottianthe cucullata
+plant	en2	9	기생꽃	Trientalis europaea subsp. arctica
+plant	en2	10	끈끈이귀개	Drosera peltata var. nipponica
+plant	en2	11	나도범의귀	Mitella nuda
+plant	en2	12	나도승마	Kirengeshoma koreana
+plant	en2	13	나도여로	Zigadenus sibiricus
+plant	en2	14	날개하늘나리	Lilium dauricum
+plant	en2	15	넓은잎제비꽃	Viola mirabilis
+plant	en2	16	노랑만병초	Rhododendron aureum
+plant	en2	17	노랑붓꽃	Iris koreana
+plant	en2	18	눈썹고사리	Asplenium wrightii
+plant	en2	19	단양쑥부쟁이	Aster altaicus var. uchiyamae
+plant	en2	20	대성쓴풀	Anagallidium dichotomum
+plant	en2	21	대청부채	Iris dichotoma
+plant	en2	22	대흥란	Cymbidium macrorhizon
+plant	en2	23	독미나리	Cicuta virosa
+plant	en2	24	두잎약난초	Cremastra unguiculata
+plant	en2	25	매화마름	Ranunculus trichophyllus var. kadzusensis
+plant	en2	26	무주나무	Lasianthus japonicus
+plant	en2	27	물고사리	Ceratopteris thalictroides
+plant	en2	28	물석송	Lycopodiella cernua
+plant	en2	29	방울난초	Habenaria flagellifera
+plant	en2	30	백부자	Aconitum coreanum
+plant	en2	31	백양더부살이	Orobanche filicicola
+plant	en2	32	백운란	Kuhlhasseltia nakaiana
+plant	en2	33	복주머니란	Cypripedium macranthos
+plant	en2	34	분홍장구채	Silene capitata
+plant	en2	35	산분꽃나무	Viburnum burejaeticum
+plant	en2	36	산작약	Paeonia obovata
+plant	en2	37	삼백초	Saururus chinensis
+plant	en2	38	새깃아재비	Woodwardia japonica
+plant	en2	39	서울개발나물	Pterygopleurum neurophyllum
+plant	en2	40	석곡	Dendrobium moniliforme
+plant	en2	41	선모시대	Adenophora erecta
+plant	en2	42	선제비꽃	Viola raddeana
+plant	en2	43	섬개야광나무	Cotoneaster wilsonii
+plant	en2	44	섬시호	Bupleurum latissimum
+plant	en2	45	섬현삼	Scrophularia takesimensis
+plant	en2	46	세뿔투구꽃	Aconitum austrokoreense
+plant	en2	47	손바닥난초	Gymnadenia conopsea
+plant	en2	48	솔잎난	Psilotum nudum
+plant	en2	49	순채	Brasenia schreberi
+plant	en2	50	신안새우난초	Calanthe aristulifera
+plant	en2	51	애기송이풀	Pedicularis ishidoyana
+plant	en2	52	연잎꿩의다리	Thalictrum coreanum
+plant	en2	53	왕제비꽃	Viola websteri
+plant	en2	54	으름난초	Cyrtosia septentrionalis
+plant	en2	55	자주땅귀개	Utricularia yakusimensis
+plant	en2	56	장백제비꽃	Viola biflora
+plant	en2	57	전주물꼬리풀	Dysophylla yatabeana
+plant	en2	58	정향풀	Amsonia elliptica
+plant	en2	59	제비동자꽃	Lychnis wilfordii
+plant	en2	60	제비붓꽃	Iris laevigata
+plant	en2	61	조름나물	Menyanthes trifoliata
+plant	en2	62	죽절초	Sarcandra glabra
+plant	en2	63	지네발란	Cleisostoma scolopendrifolium
+plant	en2	64	진노랑상사화	Lycoris chinensis var. sinuolata
+plant	en2	65	차걸이란	Oberonia japonica
+plant	en2	66	참닻꽃	Halenia coreana
+plant	en2	67	참물부추	Isoetes coreana
+plant	en2	68	초령목	Michelia compressa
+plant	en2	69	칠보치마	Metanarthecium luteo-viride
+plant	en2	70	콩짜개란	Bulbophyllum drymoglossum
+plant	en2	71	큰바늘꽃	Epilobium hirsutum
+plant	en2	72	파초일엽	Asplenium antiquum
+plant	en2	73	피뿌리풀	Stellera chamaejasme
+plant	en2	74	한라송이풀	Pedicularis hallaisanensis
+plant	en2	75	한라옥잠난초	Liparis auriculata
+plant	en2	76	한라장구채	Silene fasciculata
+plant	en2	77	해오라비난초	Habenaria radiata
+plant	en2	78	혹난초	Bulbophyllum inconspicuum
+plant	en2	79	홍월귤	Arctous rubra
+algae	en2	1	그물공말	Dictyosphaeria cavernosa
+algae	en2	2	삼나무말	Coccophora langsdorfii
+fungi	en2	1	화경솔밭버섯	Omphalotus guepiniiformis
